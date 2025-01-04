@@ -4,7 +4,7 @@ import (
     "log"
     "context"
     "encoding/json"
-
+    //"fmt"
     
 
     "github.com/docker/docker/client"
@@ -18,6 +18,7 @@ func FetchContainers() ([]byte) {
     // apiClient is the socket of docker on the system
     // client.FromEnv is a memory adress...
     apiClient, err := client.NewClientWithOpts(client.FromEnv)
+        
 
     if err != nil {
         log.Fatalf("Failed to create Docker client: %v", err)
@@ -39,6 +40,7 @@ func FetchContainers() ([]byte) {
     if err != nil {
         panic(err)
     }
+    
 
     return retVal        
 }

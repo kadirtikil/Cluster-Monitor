@@ -2,8 +2,6 @@ package fetcher
 
 import(
     "net/http"
-    "fmt"
-    "reflect"
 )
 
 func HttpFetcher(w http.ResponseWriter, r *http.Request) {
