@@ -1,6 +1,12 @@
 # Docker container fetcher
 This service fetches currently running container on the system.
 
+
+# Change of plans
+I'm building docker desktop for my rasberry pi. The rasberry will then monitor it. I will then use k8s to orchestrate the containers on two worker nodes (no mini hp pcs).
+
+
+
 ## Prerequisites
 Make sure the ```$DOCKER_HOST``` env variable is set in bashrc, to be sure, that both client point to the same socket.
 (Or the same pipe on windows)
