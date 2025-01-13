@@ -1,14 +1,22 @@
 
 import { useEffect, useState } from "react"
-import ContainerMonitor from "../../assets/kadircomponents/container_monitor/ContainerMonitor"
 import { ContainerInfo } from "../../assets/kadircomponents/container_monitor/TypesContainerJSON";
 
 
 import { FetchContainers } from "../../services/FetchContainer";
-import { setColorOfState } from "../../services/ContainerStatusColor";
-import { ContainerContext } from "../../contexts/ContainerContext";
 
-import { DataGrid, GridColDef, GridRowsProp } from "@mui/x-data-grid";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
+
+// Icons for operations
+import { MdBlock } from "react-icons/md";
+import { IoPlayOutline } from "react-icons/io5";
+import { AiOutlineDelete } from "react-icons/ai";
+
+
+// Icons for status
+import { FaRegCircleCheck } from "react-icons/fa6";
+
+
 
 // Create a context, such that the data that has been fetched here, is available down the tree
 // so i dont have to pass, all the props to all the components.
@@ -36,9 +44,6 @@ export default function Body() {
         fetchContainers();
     }, []);
 
-    const test = () => {
-        console.log(rows)
-    }
    
    const columns:GridColDef[] = [
         {
@@ -59,6 +64,22 @@ export default function Body() {
             minWidth: 300,
             editable: false,
         },
+        {
+            field: 'actions',
+            type: 'actions',
+            headerName: 'Actions',
+            minWidth: 300,
+            cellClassName: 'actions',
+            getActions: ({id}) => {
+                // do some stuff here
+                
+                return [
+                    <MdBlock style={{color: 'red', cursor: 'pointer'}}/>,
+                    <IoPlayOutline style={{color: 'green', cursor: 'pointer'}}/>,
+                    <AiOutlineDelete style={{color: 'black', cursor: 'pointer'}}/>,
+                ]
+            },
+        }
 
     ];
 
@@ -70,29 +91,11 @@ export default function Body() {
 
     return (
         <>
-        <button onClick={test}>TEST</button>
+
         <div className="h-[80vh] w-[90vw] bg-gray-500 bg-opacity-30">
-                
                 <DataGrid rows={rows} columns={columns} 
                     sx={{backgroundColor: 'white'}}
                 />
-
-                {/**
-                    containers.map((item, index) => (
-                        <div key={index} className="flex justify-center items-center">
-                            <ContainerContext.Provider value={item}>
-                                <ContainerMonitor 
-                                    modal_data={item}
-                                    height={12} 
-                                    width={12} 
-                                    color="white" 
-                                    bgcolor="black" 
-                                    current_status={setColorOfState(item.State)}
-                                />
-                            </ContainerContext.Provider>
-                        </div>
-                    ))
-                     */}
         </div>
         </>
     )
