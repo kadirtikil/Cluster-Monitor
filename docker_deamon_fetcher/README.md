@@ -29,3 +29,8 @@ The monitor will show the status itself, and for ease of use, provide an outline
 ## Fetcher package
 Basically just fetches all the containers that are running on the current machine, then returns it to the HTTP handler, and then sends it to the monitor/client.
 
+
+
+# TODO
+- Add refresh heartbeat after executing a DockerOp
+- Should i add pagination??? IDK if that would be worth it since i wont run that many applications...
