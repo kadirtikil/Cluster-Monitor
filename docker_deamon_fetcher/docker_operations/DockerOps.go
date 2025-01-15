@@ -56,3 +56,21 @@ func RemoveContainer(id string) error {
 
     return nil
 }
+
+
+func KillContainer(id string) error {
+    cli, err := client.NewClientWithOpts(client.WithVersion("1.41"))
+    if err!= nil {
+        return fmt.Errorf("Error trying to create the client in KillContainer: %v", err)
+    }
+
+    // its 15 now but i should  change it later into taking the signal as an argument
+    // such that it can be controlled as well for containers that for exmaple need to be shut down asap or something
+    if err := cli.ContainerKill(context.Background(), id, "SIGKILL"); err != nil {
+        return fmt.Errorf("Error trying to kill the container in KillContainer: %v", err)
+    }
+
+
+    return nil
+}
+

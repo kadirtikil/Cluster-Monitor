@@ -26,6 +26,7 @@ func main() {
     httpMux.HandleFunc("POST /restartcontainer", dockeroperations.HttpRestartContainer)
     httpMux.HandleFunc("POST /pausecontainer", dockeroperations.HttpPauseContainer)
     httpMux.HandleFunc("POST /removecontainer", dockeroperations.HttpRemoveContainer)
+    httpMux.HandleFunc("POST /killcontainer", dockeroperations.HttpKillContainer)
 
 
     fmt.Printf("Server is listening on port: %s\n", listeningPort)

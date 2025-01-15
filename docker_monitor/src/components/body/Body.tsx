@@ -3,7 +3,6 @@ import { useEffect, useState } from "react"
 import { ContainerInfo } from "../../assets/kadircomponents/container_monitor/TypesContainerJSON";
 
 
-import { FetchContainers } from "../../services/FetchContainer";
 
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 
@@ -11,10 +10,14 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { MdBlock } from "react-icons/md";
 import { IoPlayOutline } from "react-icons/io5";
 import { AiOutlineDelete } from "react-icons/ai";
+import { IoMdClose } from "react-icons/io";
 
 
-// Icons for status
+
+// Services
+import { FetchContainers } from "../../services/FetchContainer";
 import { containerOp } from "../../services/DockerOps";
+import { getDockerStatus } from "../../services/ContainerStatusIcon";
 
 
 
@@ -75,10 +78,20 @@ export default function Body() {
                 // do some stuff here
 
                 // the -1 is necessary because the array starts at 0 but the id starts from 1 therefore havin a diff of 1 that has to be accounted for
+                
+                if(getDockerStatus(containers[Number(id) -1 ].Status) === "Exited" || getDockerStatus(containers[Number(id) -1 ].Status) === "Paused"){
+                    return [
+                        <IoPlayOutline onClick={() => containerOp(containers[Number(id) - 1].Id, import.meta.env.VITE_RASBERRY_URL_RESTART)} style={{color: 'green', cursor: 'pointer'}}/>,
+                        <AiOutlineDelete onClick={() => containerOp(containers[Number(id) - 1].Id, import.meta.env.VITE_RASBERRY_URL_REMOVE)} style={{color: 'black', cursor: 'pointer'}}/>,
+                        <IoMdClose onClick={() => containerOp(containers[Number(id) - 1].Id, import.meta.env.VITE_RASBERRY_URL_KILL)} style={{color: 'red', cursor: 'pointer'}}/>,
+                    ]
+
+                }
+
                 return [
                     <MdBlock onClick={() => containerOp(containers[Number(id) - 1].Id, import.meta.env.VITE_RASBERRY_URL_PAUSE)} style={{color: 'red', cursor: 'pointer'}}/>,
-                    <IoPlayOutline onClick={() => containerOp(containers[Number(id) - 1].Id, import.meta.env.VITE_RASBERRY_URL_RESTART)} style={{color: 'green', cursor: 'pointer'}}/>,
                     <AiOutlineDelete onClick={() => containerOp(containers[Number(id) - 1].Id, import.meta.env.VITE_RASBERRY_URL_REMOVE)} style={{color: 'black', cursor: 'pointer'}}/>,
+                    <IoMdClose onClick={() => containerOp(containers[Number(id) - 1].Id, import.meta.env.VITE_RASBERRY_URL_KILL)} style={{color: 'red', cursor: 'pointer'}}/>,
                 ]
             },
         }

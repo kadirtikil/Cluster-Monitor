@@ -90,3 +90,23 @@ func HttpRemoveContainer(w http.ResponseWriter, r *http.Request) {
     w.Write([]byte("Container deleted successfully")) 
 }
 
+
+func HttpKillContainer(w http.ResponseWriter, r *http.Request) {
+    var docker_container DockerContainer
+    fmt.Println("reached kill")
+
+    if err := readRequestBody(r, &docker_container); err != nil {
+        respondWithError(w, http.StatusBadRequest, "Failed", err)
+        return
+    }
+
+
+    if err := KillContainer(docker_container.ContainerID); err != nil {
+        log.Println("Error trying to exec KillContainer in HttpKillContainer: ", err)
+        http.Error(w, "Error trying to exec KillContainer in HttpKillContainer", http.StatusBadRequest)
+    }
+
+    w.WriteHeader(http.StatusOK)
+    w.Write([]byte("Container is RIP"))
+
+}

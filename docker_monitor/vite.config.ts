@@ -8,9 +8,9 @@ export default defineConfig({
     proxy: {
       '/fetchcontainers': 'http://localhost:8080',
       '/restartcontainer': 'http://localhost:8080',
-      '/stopcontainer': 'http://localhost:8080',
+      '/pausecontainer': 'http://localhost:8080',
       '/removecontainer': 'http://localhost:8080',
-      
+      '/killcontainer': 'http://localhost:8080',
     },
   },
 })
