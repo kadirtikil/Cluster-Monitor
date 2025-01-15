@@ -7,8 +7,6 @@ import (
     "log"
     "io"
     "encoding/json"
-    // "github.com/docker/docker/api/types/container"
-    // "github.com/docker/docker/client"
 )
 
 
@@ -91,3 +89,4 @@ func HttpRemoveContainer(w http.ResponseWriter, r *http.Request) {
     w.WriteHeader(http.StatusOK)
     w.Write([]byte("Container deleted successfully")) 
 }
+

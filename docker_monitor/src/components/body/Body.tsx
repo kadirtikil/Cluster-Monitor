@@ -14,7 +14,7 @@ import { AiOutlineDelete } from "react-icons/ai";
 
 
 // Icons for status
-import { FaRegCircleCheck } from "react-icons/fa6";
+import { containerOp } from "../../services/DockerOps";
 
 
 
@@ -25,7 +25,6 @@ export default function Body() {
 
 
     const [containers, setContainers] = useState<ContainerInfo[]>([]);
-    const [stateColor, setStateColor] = useState('white')
 
     // const [test, setTest] = useState("first version")
 
@@ -36,7 +35,9 @@ export default function Body() {
             try {
                 const resp = await FetchContainers()
                 setContainers(resp)
-                
+
+                console.log(resp)
+
             } catch (err) {
                 console.error("Error trying to fetch data: ", err);
             }
@@ -72,11 +73,12 @@ export default function Body() {
             cellClassName: 'actions',
             getActions: ({id}) => {
                 // do some stuff here
-                
+
+                // the -1 is necessary because the array starts at 0 but the id starts from 1 therefore havin a diff of 1 that has to be accounted for
                 return [
-                    <MdBlock style={{color: 'red', cursor: 'pointer'}}/>,
-                    <IoPlayOutline style={{color: 'green', cursor: 'pointer'}}/>,
-                    <AiOutlineDelete style={{color: 'black', cursor: 'pointer'}}/>,
+                    <MdBlock onClick={() => containerOp(containers[Number(id) - 1].Id, import.meta.env.VITE_RASBERRY_URL_PAUSE)} style={{color: 'red', cursor: 'pointer'}}/>,
+                    <IoPlayOutline onClick={() => containerOp(containers[Number(id) - 1].Id, import.meta.env.VITE_RASBERRY_URL_RESTART)} style={{color: 'green', cursor: 'pointer'}}/>,
+                    <AiOutlineDelete onClick={() => containerOp(containers[Number(id) - 1].Id, import.meta.env.VITE_RASBERRY_URL_REMOVE)} style={{color: 'black', cursor: 'pointer'}}/>,
                 ]
             },
         }

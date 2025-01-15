@@ -6,7 +6,11 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/fetchcontainers': 'http://localhost:8080', // Proxy API requests to your backend
+      '/fetchcontainers': 'http://localhost:8080',
+      '/restartcontainer': 'http://localhost:8080',
+      '/stopcontainer': 'http://localhost:8080',
+      '/removecontainer': 'http://localhost:8080',
+      
     },
   },
 })
