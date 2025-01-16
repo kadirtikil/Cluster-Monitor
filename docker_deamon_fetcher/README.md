@@ -34,3 +34,8 @@ Basically just fetches all the containers that are running on the current machin
 # TODO
 - Add refresh heartbeat after executing a DockerOp
 - Should i add pagination??? IDK if that would be worth it since i wont run that many applications...
+- Add logging to monitor the cluster closer
+
+
+
+

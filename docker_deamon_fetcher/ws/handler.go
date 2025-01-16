@@ -6,8 +6,11 @@ import (
     "log"
     "fmt"
     "net/http"
+    "encoding/json"
 
     "github.com/gorilla/websocket"
+
+    // "github.com/kadirtikil/clustermonitor/dockeroperations"
 )
 
 
@@ -50,16 +53,31 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
             return
         }
 
+        // based on msg, do whatever here.
+        // match patterns or whatever
+
+        var wsMsg WsMsg 
+        if err := json.Unmarshal(p, &wsMsg); err != nil {
+            fmt.Println(err)
+        }
+        
+            
+        // now we got the container and the action so we can map both to the method
+        
+        if _, err := WsDockerOperation(wsMsg); err != nil {
+            log.Println("error")
+        } 
+        
+    
+    
+
         // send the if we are not able to read the message, back to the client
         if err := conn.WriteMessage(messageType, p); err != nil {
             log.Println("Error trying to let the client know we failed to read the message: ", err)
             return
         }
-        // based on msg, do whatever here.
-        // match patterns or whatever
-    
 
-        
-        fmt.Println("Received the message!")
+         
+        fmt.Println(wsMsg.GetAction())
     }
 }

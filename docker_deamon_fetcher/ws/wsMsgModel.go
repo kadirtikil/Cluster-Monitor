@@ -2,8 +2,11 @@ package ws
 
 import (
     "fmt"
+    "encoding/json"
 
-    "docker_deamon_fetcher/utils"
+    "github.com/kadirtikil/clustermonitor/utils"
+
+    "github.com/docker/docker/api/types"
 )
 
 // only valid actions are these
@@ -14,8 +17,8 @@ var validActions = []string{
 var validRunes = []rune{}
 
 type WsMsg struct {
-    Action string   `json:"action"`
-    Data string     `json:"data"`
+	Action string `json:"action"`
+	Data   string `json:"data"`
 }
 
 
@@ -58,18 +61,26 @@ func (wsMsg *WsMsg) GetAction() (string, error){
 }
 
 
-func (wsMsg *WsMsg) GetData() (map[string]interface{}, error) {
+func (wsMsg *WsMsg) GetData() (types.ContainerJSON, error) {
     /** 
         TODO: 
             - check if data is not empty
             - check if data can be unmarsheled into an object with docker container metadata
     */
-
+    
     if wsMsg.Data == "" {
-        return nil, fmt.Errorf("No data has been found!")
+        return types.ContainerJSON{}, fmt.Errorf("No data has been found!")
     }
 
-    return nil, nil
+
+    container := types.ContainerJSON{}
+    if err := json.Unmarshal([]byte(wsMsg.Data), &container); err != nil {
+        
+    } 
+    
+    fmt.Println(container)
+
+    return container, nil
 
 
 }

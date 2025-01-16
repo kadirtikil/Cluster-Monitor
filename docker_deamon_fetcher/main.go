@@ -2,9 +2,9 @@ package main
 
 
 import (
-    "docker_deamon_fetcher/ws"
-    "docker_deamon_fetcher/fetcher"
-    "docker_deamon_fetcher/docker_operations"
+    "github.com/kadirtikil/clustermonitor/ws"
+    "github.com/kadirtikil/clustermonitor/fetcher"
+    "github.com/kadirtikil/clustermonitor/dockeroperations"
 
     "fmt"
     "log"
