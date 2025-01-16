@@ -2,13 +2,18 @@ package main
 
 
 import (
+    "docker_deamon_fetcher/ws"
     "docker_deamon_fetcher/fetcher"
-
     "docker_deamon_fetcher/docker_operations"
+
     "fmt"
     "log"
     "net/http"
+
 )
+
+
+
 
 
 func main() {
@@ -21,6 +26,12 @@ func main() {
         Handler: httpMux,
         Addr: listeningPort,
     }
+
+
+    /** 
+        websocket route
+    */
+    httpMux.HandleFunc("/ws", ws.WsHandler)
 
     httpMux.HandleFunc("GET /fetchcontainers", fetcher.HttpFetcher)
     httpMux.HandleFunc("POST /restartcontainer", dockeroperations.HttpRestartContainer)
