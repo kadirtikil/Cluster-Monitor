@@ -47,9 +47,9 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
 
     for {
         // the msg has to be of type conn basically
-        messageType, p, err := conn.ReadMessage()
+        _, p, err := conn.ReadMessage()
         if err != nil {
-            log.Println("Error trying to read the message: ", err)
+            log.Println("Error trying to read the message in wsHandler: ", err)
             return
         }
 
@@ -61,24 +61,29 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
             fmt.Println(err)
         }
         
-            
+           
+        fmt.Println(wsMsg.GetAction())
         // now we got the container and the action so we can map both to the method
         
-        if _, err := WsDockerOperation(wsMsg); err != nil {
+        ContainerJson, err := WsDockerOperation(wsMsg)
+        if err != nil {
             log.Println("Error trying to match the action to validated ones in wsHandler: ", err)
             return
         } 
         
-    
+        responseContainerJson, err := json.Marshal(ContainerJson)
+        if err!= nil {
+            log.Println("Error trying to marshal the responseContainerJson in wsHandler: ", err)
+            return
+        }
     
 
         // send the if we are not able to read the message, back to the client
-        if err := conn.WriteMessage(messageType, p); err != nil {
+        if err := conn.WriteMessage(websocket.TextMessage, responseContainerJson); err != nil {
             log.Println("Error trying to let the client know we failed to read the message: ", err)
             return
         }
 
          
-        fmt.Println(wsMsg.GetAction())
     }
 }

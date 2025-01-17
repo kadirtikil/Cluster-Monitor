@@ -30,6 +30,9 @@ The client and server are connected through by websockets. There will be no hear
 After the connection is established, the client can fetch, pause, restart, kill or remove containers. The state of the container will then be returned to the client
 by the server. The server will send a sort of heartbeat (more of a publisher subscriber architecture) the information about the changed container to all clients.
 This way, the clients stay in sync with the server and unnecessary overheads are avoided.
+
+
+
 ![websocketsequence](/assets/websocketCM.drawio.png)
 
 # TODO

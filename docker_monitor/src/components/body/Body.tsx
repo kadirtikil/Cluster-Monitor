@@ -16,36 +16,19 @@ import { IoMdClose } from "react-icons/io";
 
 // Services
 import { FetchContainers } from "../../services/FetchContainer";
-import { containerOp } from "../../services/DockerOps";
 import { getDockerStatus } from "../../services/ContainerStatusIcon";
-import useWebSocket from "react-use-websocket";
+
+import { useContainerWsConnection } from "../../services/ContainerWs";
 
 export default function Body() {
 
     const [containers, setContainers] = useState<ContainerInfo[]>([]);
-    const [socketUrl, setSocketUrl] = useState(import.meta.env.VITE_WEBSOCKET_URL)
-    const {
-        sendMessage,
-        sendJsonMessage,
-        lastMessage,
-        lastJsonMessage,
-        readyState,
-        getWebSocket,
-      } = useWebSocket(socketUrl, {
-        onOpen: () => console.log('opened'),
-        //Will attempt to reconnect on all close events, such as server shutting down
-        shouldReconnect: (closeEvent) => true,
-      });
-    /** 
-     * we are using websockets now for this for instant feedback
-     */
-    useEffect(() => {
-        
+    const {sendJsonMsg, lastMessage} = useContainerWsConnection(import.meta.env.VITE_WEBSOCKET_URL)
+    
 
-
-    })
-
-
+    const test = () => {
+        console.log(lastMessage?.data)
+    }
 
     // const [test, setTest] = useState("first version")
 
@@ -57,7 +40,6 @@ export default function Body() {
                 const resp = await FetchContainers()
                 setContainers(resp)
 
-                console.log(resp)
 
             } catch (err) {
                 console.error("Error trying to fetch data: ", err);
@@ -96,21 +78,27 @@ export default function Body() {
                 // do some stuff here
 
                 // the -1 is necessary because the array starts at 0 but the id starts from 1 therefore havin a diff of 1 that has to be accounted for
-                
-                if(getDockerStatus(containers[Number(id) -1 ].Status) === "Exited" || getDockerStatus(containers[Number(id) -1 ].Status) === "Paused"){
+                const index = Number(id) - 1 ;
+                if(getDockerStatus(containers[index].Status) === "Up"){
                     return [
-                        <IoPlayOutline onClick={() => containerOp(containers[Number(id) - 1].Id, import.meta.env.VITE_RASBERRY_URL_RESTART)} style={{color: 'green', cursor: 'pointer'}}/>,
-                        <AiOutlineDelete onClick={() => containerOp(containers[Number(id) - 1].Id, import.meta.env.VITE_RASBERRY_URL_REMOVE)} style={{color: 'black', cursor: 'pointer'}}/>,
-                        <IoMdClose onClick={() => containerOp(containers[Number(id) - 1].Id, import.meta.env.VITE_RASBERRY_URL_KILL)} style={{color: 'red', cursor: 'pointer'}}/>,
+                        <MdBlock onClick={() => sendJsonMsg("pause",containers[index].Id)} style={{color: 'red', cursor: 'pointer'}}/>,
+                        <AiOutlineDelete onClick={() => sendJsonMsg("remove",containers[index].Id)} style={{color: 'black', cursor: 'pointer'}}/>,
+                        <IoMdClose onClick={() => sendJsonMsg("kill",containers[index].Id)} style={{color: 'red', cursor: 'pointer'}}/>,
                     ]
-
+                } else if(getDockerStatus(containers[index].Status) === "Paused") {
+                    return [
+                        <IoPlayOutline onClick={() => sendJsonMsg("restart",containers[index].Id)} style={{color: 'green', cursor: 'pointer'}}/>,
+                        <AiOutlineDelete onClick={() => sendJsonMsg("remove",containers[index].Id)} style={{color: 'black', cursor: 'pointer'}}/>,
+                        <IoMdClose onClick={() => sendJsonMsg("kill",containers[index].Id)} style={{color: 'red', cursor: 'pointer'}}/>,
+                    ]
+                } else if(getDockerStatus(containers[index].Status) === "Exited") {
+                    return [
+                        <IoPlayOutline onClick={() => sendJsonMsg("restart",containers[index].Id)} style={{color: 'green', cursor: 'pointer'}}/>,
+                        <AiOutlineDelete onClick={() => sendJsonMsg("remove",containers[index].Id)} style={{color: 'black', cursor: 'pointer'}}/>,
+                    ]
+                } else {
+                    return []
                 }
-
-                return [
-                    <MdBlock onClick={() => containerOp(containers[Number(id) - 1].Id, import.meta.env.VITE_RASBERRY_URL_PAUSE)} style={{color: 'red', cursor: 'pointer'}}/>,
-                    <AiOutlineDelete onClick={() => containerOp(containers[Number(id) - 1].Id, import.meta.env.VITE_RASBERRY_URL_REMOVE)} style={{color: 'black', cursor: 'pointer'}}/>,
-                    <IoMdClose onClick={() => containerOp(containers[Number(id) - 1].Id, import.meta.env.VITE_RASBERRY_URL_KILL)} style={{color: 'red', cursor: 'pointer'}}/>,
-                ]
             },
         }
 
@@ -124,7 +112,7 @@ export default function Body() {
 
     return (
         <>
-
+        <button onClick={test}>TEST</button>
         <div className="h-[80vh] w-[90vw] bg-gray-500 bg-opacity-30">
                 <DataGrid rows={rows} columns={columns} 
                     sx={{backgroundColor: 'white'}}

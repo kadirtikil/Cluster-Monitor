@@ -15,13 +15,8 @@ func WsDockerOperation(wsMsg WsMsg) (types.ContainerJSON, error) {
         return types.ContainerJSON{}, err
     }
        
-    container, err := wsMsg.GetData()
-    if err != nil {
-        return types.ContainerJSON{}, err
-    }
 
-
-    id := container.ID
+    id := wsMsg.Id 
         
     switch action{
     case "fetch":

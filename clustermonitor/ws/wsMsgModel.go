@@ -4,8 +4,6 @@ import (
     "fmt"
 
     "github.com/kadirtikil/clustermonitor/utils"
-
-    "github.com/docker/docker/api/types"
 )
 
 // only valid actions are these
@@ -16,8 +14,8 @@ var validActions = []string{
 var validRunes = []rune{}
 
 type WsMsg struct {
-	Action string `json:"action"`
-	Data   types.ContainerJSON `json:"data"`
+	Action  string `json:"action"`
+	Id      string `json:"id"`
 }
 
 
@@ -35,7 +33,7 @@ func (wsMsg *WsMsg) GetAction() (string, error){
     validRunes := utils.GetRunesOfStringSlice(validActions)
 
     if wsMsg.Action == ""{
-        return "", fmt.Errorf("No actions has been found in the msg!")
+        return "", fmt.Errorf("No actions have been found in the msg!")
     }
     
 
@@ -56,26 +54,5 @@ func (wsMsg *WsMsg) GetAction() (string, error){
     if action != "invalid" {
         return action, nil
     }
-    return "", fmt.Errorf("The fit aint it cuh!")
-}
-
-
-func (wsMsg *WsMsg) GetData() (types.ContainerJSON, error) {
-    /** 
-        TODO: 
-            - check if data is not empty
-            - check if data can be unmarsheled into an object with docker container metadata
-        NOTES:
-            - no need for unmarsheling, ContainJSON objects already handels it well
-    */
-   
-    fmt.Println("TEST GetData")
-    fmt.Println(wsMsg.Data.Name)
-    if wsMsg.Data.ID == "" {
-        return types.ContainerJSON{}, fmt.Errorf("No data has been found!")
-    } 
-       
-    return wsMsg.Data, nil
-
-
+    return "", fmt.Errorf("The fit aint it!")
 }
