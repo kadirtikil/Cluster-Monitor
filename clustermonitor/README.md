@@ -25,11 +25,12 @@ The containers can be in one of the following states:
 The monitor will show the status itself, and for ease of use, provide an outline corresponding to the status.
 
 
-
-## Fetcher package
-Basically just fetches all the containers that are running on the current machine, then returns it to the HTTP handler, and then sends it to the monitor/client.
-
-
+# HOW DOES IT WORK
+The client and server are connected through by websockets. There will be no heartbeats, since they are not necessary to keep the client and serve in sync.
+After the connection is established, the client can fetch, pause, restart, kill or remove containers. The state of the container will then be returned to the client
+by the server. The server will send a sort of heartbeat (more of a publisher subscriber architecture) the information about the changed container to all clients.
+This way, the clients stay in sync with the server and unnecessary overheads are avoided.
+![websocketsequence](../assets/websocketCM.drawio.png)
 
 # TODO
 - Add refresh heartbeat after executing a DockerOp

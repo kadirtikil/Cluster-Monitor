@@ -18,19 +18,34 @@ import { IoMdClose } from "react-icons/io";
 import { FetchContainers } from "../../services/FetchContainer";
 import { containerOp } from "../../services/DockerOps";
 import { getDockerStatus } from "../../services/ContainerStatusIcon";
-
-
-
-// Create a context, such that the data that has been fetched here, is available down the tree
-// so i dont have to pass, all the props to all the components.
+import useWebSocket from "react-use-websocket";
 
 export default function Body() {
 
-
-    
-
-
     const [containers, setContainers] = useState<ContainerInfo[]>([]);
+    const [socketUrl, setSocketUrl] = useState(import.meta.env.VITE_WEBSOCKET_URL)
+    const {
+        sendMessage,
+        sendJsonMessage,
+        lastMessage,
+        lastJsonMessage,
+        readyState,
+        getWebSocket,
+      } = useWebSocket(socketUrl, {
+        onOpen: () => console.log('opened'),
+        //Will attempt to reconnect on all close events, such as server shutting down
+        shouldReconnect: (closeEvent) => true,
+      });
+    /** 
+     * we are using websockets now for this for instant feedback
+     */
+    useEffect(() => {
+        
+
+
+    })
+
+
 
     // const [test, setTest] = useState("first version")
 
