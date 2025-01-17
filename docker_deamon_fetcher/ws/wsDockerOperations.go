@@ -12,12 +12,12 @@ import(
 func WsDockerOperation(wsMsg WsMsg) (types.ContainerJSON, error) {
     action, err := wsMsg.GetAction()
     if err != nil {
-        return types.ContainerJSON{}, fmt.Errorf("Action not valid!")
+        return types.ContainerJSON{}, err
     }
        
     container, err := wsMsg.GetData()
     if err != nil {
-        return types.ContainerJSON{}, fmt.Errorf("Container is not valid in WsDockerOperation!")
+        return types.ContainerJSON{}, err
     }
 
 

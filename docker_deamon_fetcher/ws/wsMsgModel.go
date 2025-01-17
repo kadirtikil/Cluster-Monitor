@@ -2,7 +2,6 @@ package ws
 
 import (
     "fmt"
-    "encoding/json"
 
     "github.com/kadirtikil/clustermonitor/utils"
 
@@ -18,7 +17,7 @@ var validRunes = []rune{}
 
 type WsMsg struct {
 	Action string `json:"action"`
-	Data   string `json:"data"`
+	Data   types.ContainerJSON `json:"data"`
 }
 
 
@@ -66,21 +65,17 @@ func (wsMsg *WsMsg) GetData() (types.ContainerJSON, error) {
         TODO: 
             - check if data is not empty
             - check if data can be unmarsheled into an object with docker container metadata
+        NOTES:
+            - no need for unmarsheling, ContainJSON objects already handels it well
     */
-    
-    if wsMsg.Data == "" {
+   
+    fmt.Println("TEST GetData")
+    fmt.Println(wsMsg.Data.Name)
+    if wsMsg.Data.ID == "" {
         return types.ContainerJSON{}, fmt.Errorf("No data has been found!")
-    }
-
-
-    container := types.ContainerJSON{}
-    if err := json.Unmarshal([]byte(wsMsg.Data), &container); err != nil {
-        
     } 
-    
-    fmt.Println(container)
-
-    return container, nil
+       
+    return wsMsg.Data, nil
 
 
 }

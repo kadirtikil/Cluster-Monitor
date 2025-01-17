@@ -65,7 +65,8 @@ func WsHandler(w http.ResponseWriter, r *http.Request) {
         // now we got the container and the action so we can map both to the method
         
         if _, err := WsDockerOperation(wsMsg); err != nil {
-            log.Println("error")
+            log.Println("Error trying to match the action to validated ones in wsHandler: ", err)
+            return
         } 
         
     
