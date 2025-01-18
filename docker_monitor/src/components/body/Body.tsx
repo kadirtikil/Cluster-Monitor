@@ -1,10 +1,9 @@
-
-import { useEffect, useState } from "react"
-import { ContainerInfo } from "../../assets/kadircomponents/container_monitor/TypesContainerJSON";
-
+import { useState } from "react"
+import { ContainerJSONBase, dummyContainerJSONBase } from "../../assets/types/TypesContainerJSON";
 
 
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
+
 
 // Icons for operations
 import { MdBlock } from "react-icons/md";
@@ -13,42 +12,78 @@ import { AiOutlineDelete } from "react-icons/ai";
 import { IoMdClose } from "react-icons/io";
 
 
+import useWebSocket from "react-use-websocket";
 
-// Services
-import { FetchContainers } from "../../services/FetchContainer";
-import { getDockerStatus } from "../../services/ContainerStatusIcon";
 
-import { useContainerWsConnection } from "../../services/ContainerWs";
 
 export default function Body() {
 
-    const [containers, setContainers] = useState<ContainerInfo[]>([]);
-    const {sendJsonMsg, lastMessage} = useContainerWsConnection(import.meta.env.VITE_WEBSOCKET_URL)
-    
+    const [containers, setContainers] = useState<ContainerJSONBase[]>([]);
+    const [updatedContainer,setContainer] = useState<ContainerJSONBase>(dummyContainerJSONBase)
 
-    const test = () => {
-        console.log(lastMessage?.data)
+    const {sendJsonMessage} = useWebSocket(import.meta.env.VITE_WEBSOCKET_URL, {
+        onClose: () => {
+            console.log("Connection closed")
+        },
+        onOpen: () => {
+            console.log('Connection openend')
+            const fetchpayload = {
+                "action": "fetch",
+                "id": "none"
+            }
+            sendJsonMessage(fetchpayload)
+        },
+        onMessage: (event) => {
+            
+            // message is a string
+            const msgJson: ContainerJSONBase[] = JSON.parse(event.data)
+            // update the instance instead of sending the whole containers a new. 
+            // bring code to data is the name of the game
+            // console.log(msgJson[1])
+
+            if(msgJson.length > 1){
+                setContainers(msgJson)
+            }
+            else {
+                updateInstance(msgJson[0])
+            }
+
+            // check if its an array with multiple values
+            // if so, it the fetch.
+            // else its a result of 
+        },
+
+    })
+
+    /** 
+     * prepare data for take off
+     */
+    const sendJsonMsg = (action: string, id: string) => {
+        const payload = {
+            "action": action,
+            "id": id
+        }
+        console.log(payload)
+        sendJsonMessage(payload)
+    }
+    
+    /**
+     * function to update certain row in array
+     */
+    const updateInstance = (update: ContainerJSONBase) => {
+        setContainers((prevContainers) => 
+            prevContainers.map((container) => 
+                container.Id === update.Id ? update : container
+            )
+        )
     }
 
-    // const [test, setTest] = useState("first version")
-
-    // console.log(import.meta.env.VITE_RASBERRY_URL)
-    // fetch the containers from rasberry
-    useEffect(() => {
-        const fetchContainers = async () => {
-            try {
-                const resp = await FetchContainers()
-                setContainers(resp)
-
-
-            } catch (err) {
-                console.error("Error trying to fetch data: ", err);
-            }
-        };    
-        fetchContainers();
-    }, []);
-
-   
+    
+    
+    const test = () => {
+        console.log(updatedContainer)
+    }
+    
    const columns:GridColDef[] = [
         {
             field: 'Image',
@@ -57,16 +92,17 @@ export default function Body() {
             editable: false,
         },
         {
-            field: 'ImageID',
+            field: 'Id',
             headerName: 'Imageid',
             minWidth: 300,
             editable: false,
         },
         {
-            field: 'Status',
+            field: 'State',
             headerName: 'Status',
             minWidth: 300,
             editable: false,
+            valueGetter: (params: any) => params.Status
         },
         {
             field: 'actions',
@@ -75,32 +111,37 @@ export default function Body() {
             minWidth: 300,
             cellClassName: 'actions',
             getActions: ({id}) => {
-                // do some stuff here
+                
+
 
                 // the -1 is necessary because the array starts at 0 but the id starts from 1 therefore havin a diff of 1 that has to be accounted for
                 const index = Number(id) - 1 ;
-                if(getDockerStatus(containers[index].Status) === "Up"){
+                const ID = containers[index].Id
+                const status = containers[index].State.Status
+                
+                if(status === "running"){
                     return [
-                        <MdBlock onClick={() => sendJsonMsg("pause",containers[index].Id)} style={{color: 'red', cursor: 'pointer'}}/>,
-                        <AiOutlineDelete onClick={() => sendJsonMsg("remove",containers[index].Id)} style={{color: 'black', cursor: 'pointer'}}/>,
-                        <IoMdClose onClick={() => sendJsonMsg("kill",containers[index].Id)} style={{color: 'red', cursor: 'pointer'}}/>,
+                        <MdBlock onClick={() => sendJsonMsg("pause",ID)} style={{color: 'red', cursor: 'pointer'}}/>,
+                        <AiOutlineDelete onClick={() => sendJsonMsg("remove",ID)} style={{color: 'black', cursor: 'pointer'}}/>,
+                        <IoMdClose onClick={() => sendJsonMsg("kill",ID)} style={{color: 'red', cursor: 'pointer'}}/>,
                     ]
-                } else if(getDockerStatus(containers[index].Status) === "Paused") {
+                } else if(status === "paused") {
                     return [
-                        <IoPlayOutline onClick={() => sendJsonMsg("restart",containers[index].Id)} style={{color: 'green', cursor: 'pointer'}}/>,
-                        <AiOutlineDelete onClick={() => sendJsonMsg("remove",containers[index].Id)} style={{color: 'black', cursor: 'pointer'}}/>,
-                        <IoMdClose onClick={() => sendJsonMsg("kill",containers[index].Id)} style={{color: 'red', cursor: 'pointer'}}/>,
+                        <IoPlayOutline onClick={() => sendJsonMsg("restart",ID)} style={{color: 'green', cursor: 'pointer'}}/>,
+                        <AiOutlineDelete onClick={() => sendJsonMsg("remove",ID)} style={{color: 'black', cursor: 'pointer'}}/>,
+                        <IoMdClose onClick={() => sendJsonMsg("kill",ID)} style={{color: 'red', cursor: 'pointer'}}/>,
                     ]
-                } else if(getDockerStatus(containers[index].Status) === "Exited") {
+                } else if(status === "exited") {
                     return [
-                        <IoPlayOutline onClick={() => sendJsonMsg("restart",containers[index].Id)} style={{color: 'green', cursor: 'pointer'}}/>,
-                        <AiOutlineDelete onClick={() => sendJsonMsg("remove",containers[index].Id)} style={{color: 'black', cursor: 'pointer'}}/>,
+                        <IoPlayOutline onClick={() => sendJsonMsg("restart",ID)} style={{color: 'green', cursor: 'pointer'}}/>,
+                        <AiOutlineDelete onClick={() => sendJsonMsg("remove",ID)} style={{color: 'black', cursor: 'pointer'}}/>,
                     ]
                 } else {
                     return []
                 }
             },
         }
+      
 
     ];
 
@@ -116,6 +157,10 @@ export default function Body() {
         <div className="h-[80vh] w-[90vw] bg-gray-500 bg-opacity-30">
                 <DataGrid rows={rows} columns={columns} 
                     sx={{backgroundColor: 'white'}}
+                    processRowUpdate={(updatedContainer) => {
+                        updateInstance(updatedContainer)
+                        return updatedContainer
+                    }}
                 />
         </div>
         </>
