@@ -1,8 +1,7 @@
 
 import './App.css'
 
-import Body from './components/body/Body'
-import TestComp from './components/test/Test'
+import ContainerList from './components/body/ContainerList'
 
 
 function App() {
@@ -15,7 +14,7 @@ function App() {
       </div>
 
       <div className='bg-saphire-blue w-screen h-[90vh] bg- flex items-center justify-center'>
-        <Body />
+        <ContainerList />
       </div>
     </div>
     </>

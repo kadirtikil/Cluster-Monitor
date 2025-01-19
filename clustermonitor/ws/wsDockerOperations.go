@@ -18,7 +18,7 @@ func WsDockerOperation(wsMsg WsMsg) ([]types.ContainerJSON, error) {
 
 	switch action {
 	case "fetch":
-		return dockeroperations.FetchContainers(id)
+		return dockeroperations.FetchContainers()
 	case "restart":
 		return dockeroperations.RestartContainer(id)
 	case "pause":

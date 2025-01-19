@@ -14,7 +14,7 @@ import (
       - send refresh after executing one of these ops DONE (use Inspect)
 */
 
-func FetchContainers(id string) ([]types.ContainerJSON, error) {
+func FetchContainers() ([]types.ContainerJSON, error) {
 	cli, err := client.NewClientWithOpts(client.WithVersion("1.41"))
 	if err != nil {
 		return []types.ContainerJSON{}, err
@@ -84,7 +84,12 @@ func RemoveContainer(id string) ([]types.ContainerJSON, error) {
 		return []types.ContainerJSON{}, fmt.Errorf("Error trying to start the container: %v", err)
 	}
 
-	return []types.ContainerJSON{}, nil
+	jsonContainer, err := FetchContainers()
+	if err != nil {
+		return []types.ContainerJSON{}, fmt.Errorf("Error trying to fetch after deleting a container: %v", err)
+	}
+
+	return jsonContainer, nil
 }
 
 func KillContainer(id string) ([]types.ContainerJSON, error) {

@@ -1,5 +1,4 @@
 import { createContext } from "react";
-import { ContainerInfo, defaultContainerInfo } from "../assets/kadircomponents/container_monitor/TypesContainerJSON";
+import { ContainerJSONBase, dummyContainerJSONBase } from "../assets/types/TypesContainerJSON";
 
-
-export const ContainerContext = createContext<ContainerInfo>(defaultContainerInfo);
+export const ContainerContext = createContext<ContainerJSONBase>(dummyContainerJSONBase);

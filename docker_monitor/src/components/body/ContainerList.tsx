@@ -1,8 +1,11 @@
 import { useState } from "react"
-import { ContainerJSONBase, dummyContainerJSONBase } from "../../assets/types/TypesContainerJSON";
-
-
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
+// websocket stuff
+import useWebSocket from "react-use-websocket";
+
+// own stuff
+import { ContainerJSONBase } from "../../assets/types/TypesContainerJSON";
+import ContainerDeleteDialog from "../dialogues/ContainerDeleteDialog";
 
 
 // Icons for operations
@@ -12,14 +15,17 @@ import { AiOutlineDelete } from "react-icons/ai";
 import { IoMdClose } from "react-icons/io";
 
 
-import useWebSocket from "react-use-websocket";
 
-
-
-export default function Body() {
+export default function ContainerList() {
 
     const [containers, setContainers] = useState<ContainerJSONBase[]>([]);
-    const [updatedContainer,setContainer] = useState<ContainerJSONBase>(dummyContainerJSONBase)
+    
+    const [open, setOpen] = useState(false)
+    const [id, setId] = useState("")
+
+    const handleCloseDialog = () => {
+        setOpen(false)
+    }
 
     const {sendJsonMessage} = useWebSocket(import.meta.env.VITE_WEBSOCKET_URL, {
         onClose: () => {
@@ -39,7 +45,7 @@ export default function Body() {
             const msgJson: ContainerJSONBase[] = JSON.parse(event.data)
             // update the instance instead of sending the whole containers a new. 
             // bring code to data is the name of the game
-            // console.log(msgJson[1])
+            console.log(msgJson[1])
 
             if(msgJson.length > 1){
                 setContainers(msgJson)
@@ -47,10 +53,6 @@ export default function Body() {
             else {
                 updateInstance(msgJson[0])
             }
-
-            // check if its an array with multiple values
-            // if so, it the fetch.
-            // else its a result of 
         },
 
     })
@@ -63,7 +65,7 @@ export default function Body() {
             "action": action,
             "id": id
         }
-        console.log(payload)
+
         sendJsonMessage(payload)
     }
     
@@ -78,16 +80,25 @@ export default function Body() {
         )
     }
 
-    
-    
-    const test = () => {
-        console.log(updatedContainer)
+    /**
+     * function that handles deletion of the container
+     * this step is a little tricky
+     */
+
+    const setupDeletionOfContainer = (id: string) => {
+        setId(id)
+        setOpen(true)
     }
+
+    const deleteContainer = (id: string) => {
+        sendJsonMsg("remove", id)
+        setOpen(false)
+    }    
     
    const columns:GridColDef[] = [
         {
-            field: 'Image',
-            headerName: 'Image',
+            field: 'Name',
+            headerName: 'Name',
             minWidth: 300,
             editable: false,
         },
@@ -115,26 +126,26 @@ export default function Body() {
 
 
                 // the -1 is necessary because the array starts at 0 but the id starts from 1 therefore havin a diff of 1 that has to be accounted for
-                const index = Number(id) - 1 ;
+                const index = Number(id)
                 const ID = containers[index].Id
                 const status = containers[index].State.Status
                 
                 if(status === "running"){
                     return [
                         <MdBlock onClick={() => sendJsonMsg("pause",ID)} style={{color: 'red', cursor: 'pointer'}}/>,
-                        <AiOutlineDelete onClick={() => sendJsonMsg("remove",ID)} style={{color: 'black', cursor: 'pointer'}}/>,
+                        <AiOutlineDelete onClick={() => setupDeletionOfContainer(ID)} style={{color: 'black', cursor: 'pointer'}}/>,
                         <IoMdClose onClick={() => sendJsonMsg("kill",ID)} style={{color: 'red', cursor: 'pointer'}}/>,
                     ]
                 } else if(status === "paused") {
                     return [
                         <IoPlayOutline onClick={() => sendJsonMsg("restart",ID)} style={{color: 'green', cursor: 'pointer'}}/>,
-                        <AiOutlineDelete onClick={() => sendJsonMsg("remove",ID)} style={{color: 'black', cursor: 'pointer'}}/>,
+                        <AiOutlineDelete onClick={() => setupDeletionOfContainer(ID)} style={{color: 'black', cursor: 'pointer'}}/>,
                         <IoMdClose onClick={() => sendJsonMsg("kill",ID)} style={{color: 'red', cursor: 'pointer'}}/>,
                     ]
                 } else if(status === "exited") {
                     return [
                         <IoPlayOutline onClick={() => sendJsonMsg("restart",ID)} style={{color: 'green', cursor: 'pointer'}}/>,
-                        <AiOutlineDelete onClick={() => sendJsonMsg("remove",ID)} style={{color: 'black', cursor: 'pointer'}}/>,
+                        <AiOutlineDelete onClick={() => setupDeletionOfContainer(ID)} style={{color: 'black', cursor: 'pointer'}}/>,
                     ]
                 } else {
                     return []
@@ -146,14 +157,13 @@ export default function Body() {
     ];
 
     const rows = containers.map((item, index) => ({
-        id: index + 1, 
+        id: index, 
         ...item,    
       }));
       
 
     return (
         <>
-        <button onClick={test}>TEST</button>
         <div className="h-[80vh] w-[90vw] bg-gray-500 bg-opacity-30">
                 <DataGrid rows={rows} columns={columns} 
                     sx={{backgroundColor: 'white'}}
@@ -163,6 +173,7 @@ export default function Body() {
                     }}
                 />
         </div>
+        <ContainerDeleteDialog openProp={open} handleClose={handleCloseDialog} deleteContainer={() => deleteContainer(id)}/>
         </>
     )
 }
