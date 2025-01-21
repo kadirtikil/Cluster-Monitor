@@ -39,7 +39,7 @@ This way, the clients stay in sync with the server and unnecessary overheads are
     - SOLVED: Just return the containers. The client checks if its one or an array and changes accordingly.
 - DONE Deletion, add deletion, such that its refetches the containers after deleting one certain container. (This can be further optimized by just checking for the deleted container.)
 - NEXT Add logging
-- NEXT Add AUTH
+- DONE Add AUTH
 
 
 

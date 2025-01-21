@@ -22,12 +22,12 @@ func (wsMsg *WsMsg) GetAction() (string, error) {
 	validRunes := utils.GetRunesOfStringSlice(validActions)
 
 	if wsMsg.Action == "" {
-		return "", fmt.Errorf("No actions have been found in the msg!")
+		return "", fmt.Errorf("no actions have been found in the msg")
 	}
 
 	for _, r := range wsMsg.Action {
 		if !utils.ContainsRuneArr(validRunes, r) {
-			return "", fmt.Errorf("Action contains invalid runes!")
+			return "", fmt.Errorf("action contains invalid runes")
 		}
 	}
 
@@ -42,5 +42,5 @@ func (wsMsg *WsMsg) GetAction() (string, error) {
 	if action != "invalid" {
 		return action, nil
 	}
-	return "", fmt.Errorf("The fit aint it!")
+	return "", fmt.Errorf("nothings worked in getaction function")
 }

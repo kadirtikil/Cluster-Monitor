@@ -28,7 +28,7 @@ func WsDockerOperation(wsMsg WsMsg) ([]types.ContainerJSON, error) {
 	case "kill":
 		return dockeroperations.KillContainer(id)
 	default:
-		return []types.ContainerJSON{}, fmt.Errorf("The action was not valid. Something very fishy is going on here!")
+		return []types.ContainerJSON{}, fmt.Errorf("the action was not valid")
 	}
 }
 
