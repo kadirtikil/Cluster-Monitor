@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -40,7 +39,6 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 		utils.RespondWithError(w, http.StatusBadRequest, "", result.Error)
 	}
 
-	fmt.Println("#####################################")
 	// create the user with the email and password of the rbody
 	result := initializers.DB.Create(&user)
 	if result.Error != nil {
@@ -61,7 +59,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// read the request
-	utils.ReadRequestBody(r, &body)
+	if err := utils.ReadRequestBody(r, &body); err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "could not read the request", err)
+		return
+	}
 
 	// check if the user exists in db
 	var user models.User
@@ -83,7 +84,14 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			"exp": time.Now().Add(time.Hour).Unix(),
 		})
 
-	tokenString, err := token.SignedString(os.Getenv("SECRET_KEY_JWT"))
+	secret := os.Getenv("SECRET_KEY_JWT")
+
+	if secret == "" {
+		utils.RespondWithError(w, http.StatusBadRequest, "secret not found in login", nil)
+		return
+	}
+
+	tokenString, err := token.SignedString([]byte(secret))
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "password authentication failed", err)
 		return
@@ -92,5 +100,4 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(w).Encode(map[string]string{"token": tokenString})
-
 }
