@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -14,6 +15,12 @@ import (
 )
 
 func SignUp(w http.ResponseWriter, r *http.Request) {
+
+	// set cors such that only the dns of the client can make requests
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
+	w.Header().Set("Access-Control-Allow-Methods", "POST")
+
+	fmt.Println("Active signup")
 	var body struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -30,6 +37,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	user := models.User{Email: body.Email, Password: string(hash)}
 	if err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "could not hash the password in signup func: ", err)
+		return
 	}
 
 	// check first if a user like that already exists
@@ -37,6 +45,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	var duplicate_user models.User
 	if result := initializers.DB.Where("email = ?", user.Email).First(&duplicate_user); result.Error == nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "", result.Error)
+		return
 	}
 
 	// create the user with the email and password of the rbody
@@ -48,11 +57,14 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 
 	// all guards passed, return status ok
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("User has been created!"))
+	json.NewEncoder(w).Encode(map[string]string{"msg": "User has been created successfully!"})
 
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
+	w.Header().Set("Access-Control-Allow-Methods", "POST")
+
 	var body struct {
 		Email    string
 		Password string
@@ -81,7 +93,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
 			"sub": user.ID,
-			"exp": time.Now().Add(time.Hour).Unix(),
+			"exp": time.Now().Add(time.Minute * 30).Unix(),
 		})
 
 	secret := os.Getenv("SECRET_KEY_JWT")
@@ -96,8 +108,60 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		utils.RespondWithError(w, http.StatusBadRequest, "password authentication failed", err)
 		return
 	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "jwt",
+		Value:    tokenString,
+		Expires:  time.Now().Add(time.Minute * 30),
+		HttpOnly: true,
+		// set sec to true later in procution for https
+		Secure: false,
+		Path:   "/",
+	})
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"msg": "login successful!"})
+}
 
-	json.NewEncoder(w).Encode(map[string]string{"token": tokenString})
+func Logout(w http.ResponseWriter, r *http.Request) {
+	// clear the cookie, such that the user cannot access any backend ressources
+	http.SetCookie(w, &http.Cookie{
+		Name:     "jwt",
+		Value:    "",
+		Expires:  time.Now(),
+		HttpOnly: true,
+		Path:     "/",
+	})
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Logged out successfully!"))
+}
+
+func CheckAuth(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("jwt")
+	if err != nil {
+		utils.RespondWithError(w, http.StatusUnauthorized, "no one is authorized", err)
+		return
+	}
+
+	tokenString := cookie.Value
+
+	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv("SECRET_KEY_JWT")), nil
+	})
+
+	if err != nil {
+		utils.RespondWithError(w, http.StatusUnauthorized, "parsing tokenstring did not work", err)
+		return
+	}
+
+	if _, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("Token is valid"))
+		return
+	}
+
+	w.WriteHeader(http.StatusUnauthorized)
+	w.Write([]byte("kummst hier net rein"))
+
 }

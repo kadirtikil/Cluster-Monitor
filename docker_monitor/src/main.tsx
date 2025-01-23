@@ -3,11 +3,15 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import { StyledEngineProvider } from '@mui/system'
+import { BrowserRouter } from 'react-router'
+
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <StyledEngineProvider injectFirst>
-      <App />
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
     </StyledEngineProvider>
   </StrictMode>,
 )
