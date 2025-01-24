@@ -14,7 +14,7 @@ func CheckJWT(next http.HandlerFunc) http.HandlerFunc {
 		cookie, err := r.Cookie("jwt")
 		if err != nil {
 			// user is not logged in cause no jwt in the cookie
-			utils.RespondWithError(w, http.StatusUnauthorized, "no jwt found", err)
+			utils.RespondWithError(w, http.StatusUnauthorized, "no jwt found in checkjwt function in jwtmiddleware", err)
 			return
 		}
 
@@ -26,7 +26,7 @@ func CheckJWT(next http.HandlerFunc) http.HandlerFunc {
 		})
 
 		if err != nil {
-			utils.RespondWithError(w, http.StatusUnauthorized, "not authorized to do anything sit down boi", err)
+			utils.RespondWithError(w, http.StatusUnauthorized, "not authorized in checkjwt function in jwtmiddleware", err)
 			return
 		}
 

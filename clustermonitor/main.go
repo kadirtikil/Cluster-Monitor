@@ -47,7 +47,7 @@ func main() {
 	// with a valid jwt
 	// the function itself is also used in the middleware
 	// and will play a central part in the authorization mechanism later on
-	httpMux.HandleFunc("POST /checkAuth", controllers.CheckAuth)
+	httpMux.HandleFunc("GET /checkAuth", middleware.CheckJWT(controllers.CheckAuth))
 
 	/**
 	  websocket route

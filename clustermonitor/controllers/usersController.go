@@ -36,7 +36,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), 10)
 	user := models.User{Email: body.Email, Password: string(hash)}
 	if err != nil {
-		utils.RespondWithError(w, http.StatusBadRequest, "could not hash the password in signup func: ", err)
+		utils.RespondWithError(w, http.StatusBadRequest, "could not hash the password in signup function in usercontroller: ", err)
 		return
 	}
 
@@ -51,7 +51,7 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	// create the user with the email and password of the rbody
 	result := initializers.DB.Create(&user)
 	if result.Error != nil {
-		utils.RespondWithError(w, http.StatusBadRequest, "could not create user in signup function user controller: ", result.Error)
+		utils.RespondWithError(w, http.StatusBadRequest, "could not create user in signup function in usercontroller: ", result.Error)
 		return
 	}
 
@@ -62,8 +62,10 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Methods", "GET")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
-	w.Header().Set("Access-Control-Allow-Methods", "POST")
 
 	var body struct {
 		Email    string
@@ -72,20 +74,20 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	// read the request
 	if err := utils.ReadRequestBody(r, &body); err != nil {
-		utils.RespondWithError(w, http.StatusBadRequest, "could not read the request", err)
+		utils.RespondWithError(w, http.StatusBadRequest, "could not read the request in login function in usercontroller", err)
 		return
 	}
 
 	// check if the user exists in db
 	var user models.User
 	if result := initializers.DB.Where("email = ?", body.Email).First(&user); result.Error != nil {
-		utils.RespondWithError(w, http.StatusBadRequest, "user does not exist", result.Error)
+		utils.RespondWithError(w, http.StatusBadRequest, "user could not be found in login function in usercontroller", result.Error)
 		return
 	}
 
 	// user exists, so check body passw with stored passw
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password)); err != nil {
-		utils.RespondWithError(w, http.StatusBadRequest, "password is wrong", err)
+		utils.RespondWithError(w, http.StatusBadRequest, "password is wrong in login function in usercontroller", err)
 		return
 	}
 
@@ -99,13 +101,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	secret := os.Getenv("SECRET_KEY_JWT")
 
 	if secret == "" {
-		utils.RespondWithError(w, http.StatusBadRequest, "secret not found in login", nil)
+		utils.RespondWithError(w, http.StatusBadRequest, "secret not found in login function in usercontroller", nil)
 		return
 	}
 
 	tokenString, err := token.SignedString([]byte(secret))
 	if err != nil {
-		utils.RespondWithError(w, http.StatusBadRequest, "password authentication failed", err)
+		utils.RespondWithError(w, http.StatusBadRequest, "password authentication failed in login function in usercontroller", err)
 		return
 	}
 
@@ -138,9 +140,12 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func CheckAuth(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
+	w.Header().Set("Access-Control-Allow-Methods", "POST")
+
 	cookie, err := r.Cookie("jwt")
 	if err != nil {
-		utils.RespondWithError(w, http.StatusUnauthorized, "no one is authorized", err)
+		utils.RespondWithError(w, http.StatusUnauthorized, "no one is authorized in checkauth function in usercontroller", err)
 		return
 	}
 
@@ -151,7 +156,7 @@ func CheckAuth(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		utils.RespondWithError(w, http.StatusUnauthorized, "parsing tokenstring did not work", err)
+		utils.RespondWithError(w, http.StatusUnauthorized, "parsing tokenstring did not work in checkauth function in usercontroller", err)
 		return
 	}
 

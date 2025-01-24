@@ -1,11 +1,13 @@
 import { useState } from "react"
 import { useNavigate } from "react-router"
+import { useAuthStore } from "../../zustand/authStore"
 
 import { FormControl, InputLabel, Input, FormHelperText, Button } from "@mui/material"
 
 
 
 export default function LogInForm() {
+    const setAuthStatus = useAuthStore((state) => state.setAuthStatus)  
 
     const navigate = useNavigate()
     
@@ -51,12 +53,13 @@ export default function LogInForm() {
                 const resp = await fetch(import.meta.env.VITE_LOGIN_URL, {
                     method: "POST",
                     headers: { "Accept": "application/json" },
+                    credentials: "include",
                     body: JSON.stringify(payload),
                 })
 
-                const msg = await resp.json()
 
-                if(msg?.msg == "login successful!" && resp.ok){
+                if(resp.ok){
+                    setAuthStatus(true)
                     navigate("/dashboard")
                 } 
 

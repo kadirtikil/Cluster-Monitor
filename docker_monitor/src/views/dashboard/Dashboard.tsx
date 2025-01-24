@@ -1,27 +1,37 @@
 import { useEffect } from "react"
-
-import { useNavigate } from "react-router"
+import { useNavigate } from "react-router";
+import { useAuthStore } from "../../zustand/authStore";
 
 import Header from "../../components/header/header"
 import ContainerList from "../../components/body/ContainerList"
 
 import LogoutIcon from '@mui/icons-material/Logout';
-
 import { IconButton } from "@mui/material";
 
 
+
+
 export default function Dashboard() {
+    const authStatus = useAuthStore((state) => state.authStatus)
+    const setAuthStatus = useAuthStore((state) => state.setAuthStatus) 
 
     const navigate = useNavigate()
 
     useEffect(() => {
-        const checkAuth = async() =>{
+        if (!authStatus) {
+             navigate("/")
+        }
+        // just in case something went async, 
+        // ask the server again to keep it safe
+        const checkAuth = async() =>{   
             try{
                 const resp = await fetch(import.meta.env.VITE_AUTHSTATUS_URL, {
                     method: "POST",
+                    credentials: "include",
                 })
 
                 if (!resp.ok){
+                    setAuthStatus(false)
                     navigate("/")
                 }
                                
@@ -33,10 +43,19 @@ export default function Dashboard() {
     })
 
     const handleLogout = async () => {
+        console.log("logged out ")
         try{
-            await fetch(import.meta.env.VITE_LOGOUT_URL, {
-                method: "POST"
+            setAuthStatus(false)
+            const resp = await fetch(import.meta.env.VITE_LOGOUT_URL, {
+                method: "POST",
+                credentials: "include",
             })
+            
+            if (resp.ok) {
+                navigate("/")
+            }
+            
+
         } catch(err){
             console.error(err)
         }

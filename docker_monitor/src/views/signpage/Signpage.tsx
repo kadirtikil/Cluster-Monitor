@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
-
-import { useNavigate } from "react-router"
+import { Navigate, useNavigate } from "react-router"
+import { useAuthStore } from "../../zustand/authStore"
 
 import { Box, } from "@mui/system"
 import { Tab, Tabs } from "@mui/material"
@@ -14,8 +14,8 @@ interface TabPanelProps {
     children?: React.ReactNode;
     index: number;
     value: number;
-  }
-  
+}
+
   
 function CustomTabPanel(props: TabPanelProps) {
     const { children, value, index, ...other } = props;
@@ -43,7 +43,8 @@ function a11yProps(index: number) {
 
 export default function SignPage() {
 
-    const navigator = useNavigate()
+    const authStatus = useAuthStore((state) => state.authStatus)
+    const navigate = useNavigate()
 
 
     // set current tab with value
@@ -53,18 +54,20 @@ export default function SignPage() {
     };
 
     useEffect(() => {
+        if(authStatus) {
+            navigate('/dashboard')
+        }
+
         const checkAuth = async () => {
             try {
                 const resp = await fetch(import.meta.env.VITE_AUTHSTATUS_URL, {
-                    method: "POST"
+                    method: "POST",
+                 
                 })
-
-                if(resp.ok) {
-                    navigator('/dashboard')
+              if(resp.ok) {
+                    navigate('/dashboard')
                 }
-
-
-            } catch(err) {
+          } catch(err) {
                 console.error(err)
             }
         }
