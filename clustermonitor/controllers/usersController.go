@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -20,7 +19,6 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
 	w.Header().Set("Access-Control-Allow-Methods", "POST")
 
-	fmt.Println("Active signup")
 	var body struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
