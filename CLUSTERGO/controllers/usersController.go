@@ -2,8 +2,10 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
+	"regexp"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -13,7 +15,36 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+func PasswordSanitizer(password string) (bool, error) {
+	digit := regexp.MustCompile(`\d`)
+	specialChars := regexp.MustCompile(`[!@#$%^&*(),.?":{}|<>]`)
+	upperCase := regexp.MustCompile(`[A-Z]`)
+	lowerCase := regexp.MustCompile(`[a-z]`)
+	minLength := 8
+
+	match, err := regexp.MatchString("[A-Z][a-z]", password)
+	if err != nil {
+		return false, fmt.Errorf("error in passwordsanitizer, password format is not allowed: %v", err)
+	}
+	if match {
+		return digit.MatchString(password) && specialChars.MatchString(password) && upperCase.MatchString(password) && lowerCase.MatchString(password) && len(password) >= minLength, nil
+	}
+	return false, fmt.Errorf("error in passwordsanitizer, password format is not allowed: %v", err)
+}
+
+func EmailSanitizer(email string) (bool, error) {
+	match, err := regexp.MatchString(`/^[^\s@]+@[^\s@]+\.[^\s@]+$/`, email)
+	if err != nil {
+		return false, fmt.Errorf("error in emailsanitizer, password format is not allowed: %v", err)
+	}
+	if match {
+		return true, nil
+	}
+	return false, fmt.Errorf("error in emailsanitizer, password format is not allowed: %v", err)
+}
+
 func SignUp(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("##############################################")
 
 	// set cors such that only the dns of the client can make requests
 	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
@@ -27,6 +58,18 @@ func SignUp(w http.ResponseWriter, r *http.Request) {
 	// find email and password
 	if err := utils.ReadRequestBody(r, &body); err != nil {
 		utils.RespondWithError(w, http.StatusBadRequest, "could not read rbody in signup function in userscontroller: ", err)
+		return
+	}
+
+	validEmail, err := EmailSanitizer(body.Email)
+	if err != nil || !validEmail {
+		utils.RespondWithError(w, http.StatusBadRequest, "email format is not valid", err)
+		return
+	}
+
+	validPw, err := PasswordSanitizer(body.Password)
+	if !validPw || err != nil {
+		utils.RespondWithError(w, http.StatusBadRequest, "password format is invalid", err)
 		return
 	}
 
