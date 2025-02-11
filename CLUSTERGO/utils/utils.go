@@ -57,3 +57,9 @@ func RespondWithError(w http.ResponseWriter, statusCode int, message string, err
 	log.Println(message, err)
 	http.Error(w, message, statusCode)
 }
+
+var cyan = "\033[36m"
+
+func TODO(task string) {
+	fmt.Println("\n" + cyan + "A TASK THAT NEEDS TO BE DONE:\n" + task + "\n")
+}
